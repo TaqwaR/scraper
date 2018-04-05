@@ -14,7 +14,6 @@ const PORT = 3000;
 const app = express();
 
 // Configure middleware
-
 // Use morgan logger for logging requests
 app.use(logger("dev"));
 // Use body-parser for handling form submissions
@@ -22,15 +21,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
+require("./routes/api-routes")(app);
+require("./routes/html-routes")(app);
+
+// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/scraper";
+
 mongoose.Promise = Promise;
 mongoose.connect("mongodb://localhost/scraper", {
-  useMongoClient: true
+  //useMongoClient: true
 });
 
-app.get("/scrape", function (req, res) {
-	axios.get("https://www.reddit.com/r/Beekeeping/").then(function(response) {
-		const $ = cheerio.load(response.data);
-
-		
-	})
-})
+app.listen(PORT, function() {
+  console.log("App listening on PORT: " + PORT);
+});
