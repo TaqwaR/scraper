@@ -11,12 +11,12 @@ const app = express();
 
 module.exports = function(app) {
 
-
 	app.get("/scrape", function (req, res) {
 		axios.get("https://www.reddit.com/r/Beekeeping/").then(function(response) {
 			const $ = cheerio.load(response.data);
 
 			let results = {};
+
 
 			$("a.title.may-blank").each(function(i, element) {
 
@@ -25,20 +25,44 @@ module.exports = function(app) {
 				results.title = $(this).text();
 				results.link = $(this).attr("href");
 
-				console.log(results);
+				console.log("Title: ", results.title);
+				console.log("Link: ", results.link);
+				console.log("DB: ", db);
 
-
+				db.Headline.create(results)
+				.then(function(dbHeadline) {
+					console.log(dbHeadline);
+				})
+				.catch(function(err) {
+					return res.json(err);
+				});
 			});
 
-			// $("p.tagline").each(function(i, element) {
-			// 	results.summary = $(this).text();
+			$("p.tagline").each(function(i, element) {
+				results.summary = $(this).text();
 
-			// 	console.log(results);
-			// })
+				console.log("Summary: ", results.summary);
+			});
 
-		res.send("scrape complete");
 
+			res.send("boom");
+		
+		})
+
+	});
+
+	app.get("/api/headlines", function(req, res) {
+		db.Headline.find({})
+		.then(function(dbHeadline) {
+			res.json(dbHeadline);
+		})
+		.catch(function(err) {
+			res.json(err);
 		});
-	})
+	});
+
+
+
+
 
 }
